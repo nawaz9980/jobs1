@@ -54,7 +54,7 @@
                         placeholder="<b>Role:</b> Full-time&#10;<b>Salary:</b> $5000/mo"></textarea>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wider">Button
                             Text</label>
@@ -69,7 +69,7 @@
                             class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all duration-200 placeholder:text-slate-400"
                             placeholder="https://...">
                     </div>
-                </div>
+                </div> -->
 
                 <div>
                     <label class="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wider">Target
@@ -102,18 +102,17 @@
                         style="clip-path: polygon(100% 0, 100% 100%, 0 100%);"></div>
 
                     <div class="text-[15px] leading-relaxed text-slate-900">
-                        🌟 <span class="font-bold">New Job Posting!</span><br><br>
-                        📌 <span id="preview-title" class="font-bold">UI/UX Designer</span><br><br>
+                        <span id="preview-title" class="font-bold">UI/UX Designer</span><br><br>
                         <div id="preview-desc" class="text-slate-700 whitespace-pre-line">Your description will appear
                             here as you type. Use bold or italic tags for emphasis.</div>
                     </div>
                 </div>
 
                 <!-- Inline Button -->
-                <div
+                <!-- <div
                     class="w-full mt-2 bg-black/30 backdrop-blur-md border border-white/10 rounded-xl py-2.5 text-center text-white font-medium text-sm transition-all hover:bg-black/40 cursor-default">
                     <span id="preview-btn">Apply Now</span>
-                </div>
+                </div> -->
             </div>
         </div>
     </div>
@@ -156,24 +155,24 @@
             desc = desc.replace(/\n/g, '<br>');
             // Very basic HTML support for preview
             previewDesc.innerHTML = desc;
-            previewBtn.innerText = btnNameInput.value || 'Apply Now';
+            if (previewBtn) previewBtn.innerText = (btnNameInput && btnNameInput.value) || 'Apply Now';
         }
 
         [titleInput, descInput, btnNameInput, btnLinkInput].forEach(el => {
-            el.addEventListener('input', updatePreview);
+            if (el) el.addEventListener('input', updatePreview);
         });
 
         submitBtn.addEventListener('click', async () => {
             const data = {
                 title: titleInput.value,
                 description: descInput.value,
-                buttonName: btnNameInput.value,
-                buttonLink: btnLinkInput.value,
+                buttonName: btnNameInput ? btnNameInput.value : '',
+                buttonLink: btnLinkInput ? btnLinkInput.value : '',
                 categoryId: categorySelect.value
             };
 
-            if (!data.title || !data.description || !data.buttonName || !data.buttonLink || !data.categoryId) {
-                showStatus('⚠️ Please complete all fields', 'error');
+            if (!data.title || !data.description || !data.categoryId) {
+                showStatus('⚠️ Title, Description, and Category are required.', 'error');
                 return;
             }
 
@@ -192,7 +191,9 @@
 
                 if (result.success) {
                     showStatus(`🎯 Broadcast complete! Sent to ${result.count} premium users.`, 'success');
-                    [titleInput, descInput, btnNameInput, btnLinkInput].forEach(el => el.value = '');
+                    [titleInput, descInput, btnNameInput, btnLinkInput].forEach(el => {
+                        if (el) el.value = '';
+                    });
                     updatePreview();
                 } else {
                     showStatus('❌ ' + (result.error || 'Failed to send'), 'error');

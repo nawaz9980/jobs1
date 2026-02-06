@@ -183,6 +183,19 @@ module.exports = {
     getUsersByCategory: async (categoryId) => {
         const [rows] = await pool.execute('SELECT telegram_id FROM user_categories WHERE category_id = ?', [categoryId]);
         return rows;
+    },
+    getTrialUsers: async () => {
+        try {
+            // A user is in trial if they are premium, trial_used is true, 
+            // and they don't have a specific premium_plan (months > 0)
+            const [rows] = await pool.execute(
+                'SELECT telegram_id FROM users WHERE is_premium = TRUE AND trial_used = TRUE AND (premium_plan IS NULL OR premium_plan = 0) AND premium_expiry > NOW()'
+            );
+            return rows;
+        } catch (err) {
+            console.error('Get trial users error:', err);
+            return [];
+        }
     }
 };
 

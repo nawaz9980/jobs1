@@ -3,7 +3,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-const { getPremiumUsers, getCategories, getUsersByCategory } = require('./db');
+const { getPremiumUsers, getCategories, getUsersByCategory, getTrialUsers } = require('./db');
 
 const token = process.env.BOT_TOKEN;
 if (!token) {
@@ -30,21 +30,32 @@ app.get('/api/categories', async (req, res) => {
 app.post('/api/post-job', async (req, res) => {
     const { title, description, buttonName, buttonLink, categoryId } = req.body;
 
-    if (!title || !description || !buttonName || !buttonLink || !categoryId) {
-        return res.status(400).json({ error: 'All fields are required' });
+    if (!title || !description || !categoryId) {
+        console.log('Missing fields:', { title: !!title, description: !!description, categoryId: !!categoryId });
+        return res.status(400).json({ error: 'Title, Description, and Category are required.' });
     }
 
     try {
-        const targetUsers = await getUsersByCategory(categoryId);
-        const message = `🌟 <b>New Job Posting!</b>\n\n📌 <b>${title}</b>\n\n${description}`;
+        const categoryUsers = await getUsersByCategory(categoryId);
+        const trialUsers = await getTrialUsers();
+
+        // Merge and ensure unique telegram_ids
+        const allTargetUsers = [...categoryUsers, ...trialUsers];
+        const uniqueUsers = Array.from(new Map(allTargetUsers.map(u => [u.telegram_id, u])).values());
+
+        const message = `<b>${title}</b>\n\n${description}`;
+
         const opts = {
-            parse_mode: 'HTML',
-            reply_markup: {
-                inline_keyboard: [[{ text: buttonName, url: buttonLink }]]
-            }
+            parse_mode: 'HTML'
         };
 
-        const sendPromises = targetUsers.map(user =>
+        if (buttonName && buttonLink) {
+            opts.reply_markup = {
+                inline_keyboard: [[{ text: buttonName, url: buttonLink }]]
+            };
+        }
+
+        const sendPromises = uniqueUsers.map(user =>
             bot.sendMessage(user.telegram_id, message, opts)
                 .then(() => ({ success: true }))
                 .catch(err => ({ success: false, error: err.message }))

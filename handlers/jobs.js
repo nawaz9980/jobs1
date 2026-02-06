@@ -1,35 +1,33 @@
-const { getUser, allJobs } = require('../db');
-
 module.exports = (bot) => {
     bot.on('message', async (msg) => {
-        if (msg.text === '🔍 Browse Jobs') {
+        if (msg.text === '📢 Share Bot') {
             const chatId = msg.chat.id;
-            const user = await getUser(chatId);
+            const botUser = await bot.getMe();
+            const botLink = `https://t.me/${botUser.username}`;
+            const shareLink = `https://t.me/share/url?url=${encodeURIComponent(botLink)}&text=${encodeURIComponent('🚀 Get instant UAE Job Alerts! Join the best job bot now.')}`;
 
-            // Free users see limited jobs
-            const visibleJobs = user.is_premium ? allJobs : allJobs.filter(j => !j.isPremium);
+            const message = `📢 <b>Share UAE Job Alerts</b>\n\nHelp your friends find their dream job in the UAE! Click the button below to share this bot with your contacts or groups.`;
 
-            let response = `📋 <b>Available Jobs (${user.is_premium ? 'Premium' : 'Free Preview'})</b>\n\n`;
-
-            visibleJobs.forEach(job => {
-                response += `🔹 <b>${job.title}</b>\n`;
-                response += `📍 Location: ${job.location}\n`;
-                response += `📁 Category: ${job.category}\n`;
-                response += `🎓 Exp: ${job.exp}\n`;
-
-                if (user.is_premium) {
-                    response += `📞 Contact: ${job.contact}\n`;
-                } else {
-                    response += `📞 Contact: [Locked 🔒 Upgrade to see]\n`;
+            const opts = {
+                parse_mode: 'HTML',
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: '📤 Share with Friends', url: shareLink }]
+                    ]
                 }
-                response += `---------------------------\n`;
-            });
+            };
 
-            if (!user.is_premium) {
-                response += `\n🚀 <i>Upgrade to Premium to see verified HR contacts and 100+ more daily jobs!</i>`;
-            }
+            bot.sendMessage(chatId, message, opts);
+        } else if (msg.text === '❓ FAQ / Help') {
+            const faqMessage = `<b>❓ Frequently Asked Questions</b>\n\n` +
+                `<b>1️⃣ How do I subscribe?</b>\n` +
+                `Click on "⭐ Premium Features" in the menu to select a plan (1, 3, 6, or 12 months) and pay securely via PayPal.\n\n` +
+                `<b>2️⃣ Are these jobs verified?</b>\n` +
+                `Yes! We verify job postings to ensure they are 100% genuine and safe for our users.\n\n` +
+                `<b>3️⃣ How to cancel?</b>\n` +
+                `Our Premium plans are <b>one-time payments</b> and do not auto-renew. Your Premium access simply expires at the end of your plan—no need to worry about cancellation!`;
 
-            bot.sendMessage(chatId, response, { parse_mode: 'HTML' });
+            bot.sendMessage(msg.chat.id, faqMessage, { parse_mode: 'HTML' });
         }
     });
 };

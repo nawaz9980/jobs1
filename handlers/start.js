@@ -18,8 +18,9 @@ module.exports = (bot) => {
             parse_mode: 'HTML',
             reply_markup: {
                 keyboard: [
-                    ['🔍 Browse Jobs', '📂 View Categories'],
-                    ['⭐ Premium Features', '👤 My Account']
+                    ['📂 View Categories'],
+                    ['⭐ Premium Features', '👤 My Account'],
+                    ['📢 Share Bot', '❓ FAQ / Help']
                 ],
                 resize_keyboard: true
             }

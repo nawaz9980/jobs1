@@ -4,10 +4,13 @@ const { setPremium, getUser, checkPremium } = require('../db');
 // PayPal Environment Setup
 const clientId = process.env.PAYPAL_CLIENT_ID;
 const clientSecret = process.env.PAYPAL_SECRET;
+const mode = process.env.PAYPAL_MODE || 'sandbox';
 
-// Explicitly using SandboxEnvironment for Test Mode
-console.log('Using PayPal Sandbox Mode');
-const environment = new paypal.core.SandboxEnvironment(clientId, clientSecret);
+const environment = mode === 'live'
+    ? new paypal.core.LiveEnvironment(clientId, clientSecret)
+    : new paypal.core.SandboxEnvironment(clientId, clientSecret);
+
+console.log(`Using PayPal ${mode === 'live' ? 'Live' : 'Sandbox'} Mode`);
 const client = new paypal.core.PayPalHttpClient(environment);
 
 module.exports = (bot) => {
@@ -85,8 +88,8 @@ ${statusText}
             request.requestBody({
                 intent: 'CAPTURE',
                 application_context: {
-                    return_url: 'https://t.me/OnexjobsBot',
-                    cancel_url: 'https://t.me/OnexjobsBot',
+                    return_url: 'https://t.me/uaecareeralertsbott',
+                    cancel_url: 'https://t.me/uaecareeralertsbot',
                     brand_name: 'UAE Job Alerts Bot',
                     landing_page: 'BILLING',
                     user_action: 'CONTINUE'
